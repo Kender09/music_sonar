@@ -162,7 +162,7 @@ class SonarWave {
                     }
                     this.baseSound.stop();
                     this.baseSound.empty();
-                    float[] chord = chordSet.getRandomChord();
+                    float[] chord = chordSet.getRandomChord(0);
                     this.baseSound.addChord(0, 1, 0, chord, 100, longtail, 0.8, 64);
                     this.baseSoundFlag[c] = 1;
                     this.baseSound.play();

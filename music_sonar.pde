@@ -4,7 +4,7 @@ import SimpleOpenNI.*;
 final int canvasWidth = 640;
 final int canvasHeight = 480;
 final int setFrameRate = 30;
-final int maxObject = 4;
+final int maxObject = 6;
 
 // SensedObject[] objects;
 TestObject[] objects;
@@ -14,6 +14,7 @@ SoundCipher[] sounds;
 // SoundCipher baseSound;
 SCScore baseSound;
 SCScore nearSound;
+SCScore[] onebaseSounds;
 // SoundCipher backMusic1;
 
 LineWave lineWave;
@@ -48,31 +49,24 @@ void setup() {
         sounds[c] = new SoundCipher(this);
     }
     // baseSound = new SoundCipher(this);
+    onebaseSounds = new SCScore[3];
+    for (int i = 0; i < 3; ++i) {
+        onebaseSounds[i] = new SCScore();
+    }
     baseSound = new SCScore();
     nearSound = new SCScore();
-    // backMusic1 = new SoundCipher(this);
-    // backMusic1.tempo(80);
-    // backMusic1.repeat(16);
-    // backMusic1.pan(64);
-    // float[] pitches = {64, 66, 71, 73, 74, 66, 64, 73, 71, 66, 74, 73};
-    // float[] dynamics = new float[pitches.length];
-    // float[] durations = new float[pitches.length];
-    // for(int i=0; i<pitches.length; i++) {
-    // dynamics[i] = random(20) + 20;
-    // durations[i] = 0.25;
-    // }
-    //backMusic1.playPhrase(pitches, dynamics, durations);
 
-    simpleOpenNI = new SimpleOpenNI(this);
-    simpleOpenNI.enableDepth();
+    // simpleOpenNI = new SimpleOpenNI(this);
+    // simpleOpenNI.enableDepth();
     // lineWave = new LineWave(simpleOpenNI, sounds);
 
     objects = new TestObject[maxObject];
     objects[0] = new TestObject(100, height/2);
     // objects[1] = new TestObject(width/4, 350);
     // objects[2] = new TestObject(width/4, height/2);
-    // sonarWave = new SonarWave(sounds, baseSound, objects, objectCount, maxObject);
-    mapMusic =new MapMusic(nearSound, baseSound, objects, objectCount, maxObject);
+
+    sonarWave = new SonarWave(sounds, baseSound, objects, objectCount, maxObject);
+    mapMusic =new MapMusic(nearSound, onebaseSounds, objects, objectCount, maxObject);
 
     frameRate(setFrameRate);
 }
@@ -84,12 +78,13 @@ void draw() {
 void update() {
     fadeToWhite();
     if(modeNum == 1){
-        lineWave.update();
+        // lineWave.update();
+        sonarWave.update(objects, objectCount);
+        drawsetting();
         return;
     }
     // moveObject();
-    // sonarWave.update(objects, objectCount);
-    mapMusic.update(objects, objectCount);
+    mapMusic.update(objects, objectCount, moveObNum);
     drawsetting();
 }
 
@@ -107,7 +102,7 @@ void fadeToWhite() {
 
 void keyPressed() {
     if(key == 'c' || key == 'C'){
-        // modeNum = (modeNum + 1 ) % 2;
+        modeNum = (modeNum + 1 ) % 2;
         return;
     }
     if(key == 'z' || key == 'Z'){

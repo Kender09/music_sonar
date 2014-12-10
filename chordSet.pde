@@ -5,6 +5,14 @@ float[] keysNoteMap;
 
 float[][] chordMap;
 
+//Cメジャー
+int[] tMap = { 0, 13, 14, 16};
+int[] dMap = { 7, 15};
+int[] sMap = { 5, 12};
+
+//カデンツで次の, ;
+char next_K = 'T';
+
 int save_i = -1;
 
     ChordSet() {
@@ -14,7 +22,7 @@ int save_i = -1;
         for(int i=0; i < 24; ++i){
             keysNoteMap[i] = 35 + i;
         }
-        // C
+        // C T
         chordMap[0][0] = keysNoteMap[0];
         chordMap[0][1] = keysNoteMap[4];
         chordMap[0][2] = keysNoteMap[7];
@@ -34,7 +42,7 @@ int save_i = -1;
         chordMap[4][0] = keysNoteMap[4];
         chordMap[4][1] = keysNoteMap[8];
         chordMap[4][2] = keysNoteMap[11];
-        // F
+        // F S
         chordMap[5][0] = keysNoteMap[2];
         chordMap[5][1] = keysNoteMap[6];
         chordMap[5][2] = keysNoteMap[9];
@@ -42,7 +50,7 @@ int save_i = -1;
         chordMap[6][0] = keysNoteMap[6];
         chordMap[6][1] = keysNoteMap[10];
         chordMap[6][2] = keysNoteMap[13];
-        // G
+        // G D
         chordMap[7][0] = keysNoteMap[7];
         chordMap[7][1] = keysNoteMap[11];
         chordMap[7][2] = keysNoteMap[14];
@@ -62,6 +70,26 @@ int save_i = -1;
         chordMap[11][0] = keysNoteMap[11];
         chordMap[11][1] = keysNoteMap[15];
         chordMap[11][2] = keysNoteMap[18];
+        // Dm S
+        chordMap[12][0] = keysNoteMap[2];
+        chordMap[12][1] = keysNoteMap[5];
+        chordMap[12][2] = keysNoteMap[9];
+        // Em T
+        chordMap[13][0] = keysNoteMap[4];
+        chordMap[13][1] = keysNoteMap[7];
+        chordMap[13][2] = keysNoteMap[11];
+        // Am T
+        chordMap[14][0] = keysNoteMap[9];
+        chordMap[14][1] = keysNoteMap[12];
+        chordMap[14][2] = keysNoteMap[16];
+        // Bm -5 D
+        chordMap[15][0] = keysNoteMap[11];
+        chordMap[15][1] = keysNoteMap[14];
+        chordMap[15][2] = keysNoteMap[17];
+        // C oc+1 T
+        chordMap[16][0] = keysNoteMap[0];
+        chordMap[16][1] = keysNoteMap[4];
+        chordMap[16][2] = keysNoteMap[7];
     }
 
     float[] getMin(float[] cho){
@@ -80,7 +108,7 @@ int save_i = -1;
         return cho;
     }
 
-    float[] getRandomChord(){
+    float[] getRandomChord(float oc){
         int i;
         while (true) {
             i = (int)random(11);
@@ -89,6 +117,9 @@ int save_i = -1;
             }
         }
         float[] setchord = chordMap[i];
+        for(int c=0; c<3 ;++c){
+            setchord[c] = setchord[c] + 12*oc;
+        }
         int chenge = (int)random(12);
         if(chenge == 0 || chenge == 1 || chenge == 2){
             setchord = getMin(setchord);
@@ -102,6 +133,72 @@ int save_i = -1;
         save_i = i;
         return setchord;
     }
+
+    float[] getRandomMinChord(float oc){
+        int i;
+        while (true) {
+            i = (int)random(11);
+            if(i != save_i){
+                break;
+            }
+        }
+        float[] setchord = chordMap[i];
+        for(int c=0; c<3 ;++c){
+            setchord[c] = setchord[c] + 12*oc;
+        }
+        setchord = getMin(setchord);
+        save_i = i;
+        return setchord;
+    }
+
+    float[] getRandomNormalChord(float oc){
+        int i;
+        while (true) {
+            i = (int)random(11);
+            if(i != save_i){
+                break;
+            }
+        }
+        float[] setchord = chordMap[i];
+        for(int c=0; c<3 ;++c){
+            setchord[c] = setchord[c] + 12*oc;
+        }
+        save_i = i;
+        return setchord;
+    }
+
+        float[] getCadenceChord(float oc){
+        int i = 0;
+        if(next_K == 'T'){
+            i = (int)random(tMap.length);
+            i = tMap[i];
+            int r = (int)random(3);
+            next_K = 'S';
+            if(r == 2){
+                next_K='D';
+            }
+        }
+        if(next_K == 'S'){
+            i = (int)random(sMap.length);
+            i = sMap[i];
+            int r = (int)random(2);
+            next_K = 'S';
+            if(r == 1){
+                next_K='D';
+            }
+        }
+        if(next_K == 'D'){
+            i = (int)random(dMap.length);
+            i = dMap[i];
+            next_K = 'T';
+        }
+        float[] setchord = chordMap[i];
+        for(int c=0; c<3 ;++c){
+            setchord[c] = setchord[c] + 12*oc;
+        }
+        return setchord;
+    }
+
 
     float getPitch(float oc, float f, float max_f){
         float pitch = keysNoteMap[0] + oc*12;
