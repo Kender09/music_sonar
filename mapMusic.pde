@@ -20,7 +20,7 @@ class MapMusic {
     MapMusic(SCScore nearSound, SCScore[] baseSounds,TestObject[] objects, int objectCount, int maxObject) {
         this.objectCount = objectCount;
         this.nearSound = nearSound;
-        this.nearSound.tempo(180);
+        this.nearSound.tempo(224);
         this.nearSound.repeat(0);
 
         // this.baseSound = baseSound;
@@ -28,7 +28,7 @@ class MapMusic {
         // this.baseSound.repeat(-1);
         this.baseSounds = baseSounds;
         for (int i = 0; i < 3; ++i) {
-            this.baseSounds[i].tempo(90);
+            this.baseSounds[i].tempo(56);
             this.baseSounds[i].repeat(0);
         }
 
@@ -148,6 +148,7 @@ class MapMusic {
                 }
          }
     }
+
     void soundMusic(){
         int chordCount = 0;
         int pitchCount = 0;
@@ -157,12 +158,17 @@ class MapMusic {
         float[] base_longtails = new float[12];
         float[] base_articulations = new float[12];
         float pan;
-        float[] phrase = new float[12];
-        float[] dynamics = new float[12];
-        float[] phrasePans = new float[12];
-        float[] longtails = new float[12];
-        float[] articulations = new float[12];
+        float[] phrase = new float[24];
+        float[] dynamics = new float[24];
+        float[] phrasePans = new float[24];
+        float[] longtails = new float[24];
+        float[] articulations = new float[24];
         float disPitch  = 0.0;
+
+        float[] savePharse = new float[3];
+        // for (int i = 0; i < 3; ++i) {
+        //     savePharse[i] = (int)random(-4, 4) * 2;
+        // }
         // this.baseSound.stop();
         this.nearSound.stop();
         // this.baseSound.empty();
@@ -193,11 +199,27 @@ class MapMusic {
             }
             if( 3*height/5 <= mapObjects[c]){
                 float f = chordSet.getPitch(2, mapObjects[c] - 3*height/5, 2*height/5);
+               for (int i = 0; i < 3; ++i) {
+                    savePharse[i] = (int)random(-4, 4) * 2;
+                }
                 phrase[pitchCount] = f;
                 phrasePans[pitchCount] = pan;
+                dynamics[pitchCount] = 80;
                 pitchCount++;
-                phrase[pitchCount] = f -2;
+                f = f - savePharse[0];
+                phrase[pitchCount] = f;
                 phrasePans[pitchCount] = pan;
+                dynamics[pitchCount] = 80 - random(-10, 30);
+                pitchCount++;
+                f = f - savePharse[1];
+                phrase[pitchCount] = f;
+                phrasePans[pitchCount] = pan;
+                dynamics[pitchCount] = 80 - random(-20, 10);
+                pitchCount++;
+                f = f - savePharse[2];
+                phrase[pitchCount] = f;
+                phrasePans[pitchCount] = pan;
+                dynamics[pitchCount] = 80 - random(-10, 30);
                 pitchCount++;
             }
         }
@@ -206,18 +228,19 @@ class MapMusic {
         //     longtail = 0.5;
         // }
         if(pitchCount !=0){
-            for(int c= 0 ;  c < 12; ++c){
+            for(int c= 0 ;  c < 24; ++c){
                 longtails[c] = 1;
                 articulations[c] = 0.8;
-                dynamics[c] = 80;
-                if(c%2 ==1){
-                    dynamics[c] = 50;
-                }
+                // dynamics[c] = 80;
+                // if(c%2 ==1){
+                //     dynamics[c] = 50;
+                // }
             }
-            int pitchCountGap = 12 - pitchCount;
+            int pitchCountGap = 24 - pitchCount;
             for (int i = 0; i < pitchCountGap; ++i) {
                 phrase[pitchCount + i] = phrase[i % pitchCount];
                 phrasePans[pitchCount + i] = phrasePans[i % pitchCount];
+                dynamics[pitchCount+ i] = dynamics[i%pitchCount];
             }
             this.nearSound.addPhrase(0, 0, 0, phrase, dynamics, longtails, articulations, phrasePans);
         }
@@ -255,9 +278,9 @@ class MapMusic {
             base_dynamics[chordCount + i] = base_dynamics[i % chordCount];
         }
         // float instrument = this.baseSounds[0].ABASS;
-        float instrument = this.baseSounds[0].JAZZ_ORGAN;
+        float instrument = this.baseSounds[0].EPIANO;
         for (int i = 0; i < 3; ++i) {
-            this.baseSounds[i].addPhrase(0, 1, instrument, oneBases[i], base_dynamics, base_longtails, base_articulations, oneBasesPan);
+            this.baseSounds[i].addPhrase(0, 0, instrument, oneBases[i], base_dynamics, base_longtails, base_articulations, oneBasesPan);
         }
         for (int i = 0; i < 3; ++i) {
             this.baseSounds[i].play();
