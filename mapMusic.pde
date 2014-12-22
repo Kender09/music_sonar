@@ -8,7 +8,8 @@ class MapMusic {
     int objectCount;
 
     SCScore nearSound;
-    SCScore[] baseSounds;
+    SCScore baseSound;
+    SCScore drumSound;
     int resetFlag = 0;
 
     TestObject[] objects;
@@ -17,20 +18,22 @@ class MapMusic {
 
     ChordSet chordSet;
 
-    MapMusic(SCScore nearSound, SCScore[] baseSounds,TestObject[] objects, int objectCount, int maxObject) {
+//現在の小節
+    int measureCount;
+
+    MapMusic(SCScore nearSound, SCScore baseSound,SCScore drumSound,TestObject[] objects, int objectCount, int maxObject) {
         this.objectCount = objectCount;
         this.nearSound = nearSound;
-        this.nearSound.tempo(224);
+        this.drumSound = drumSound;
+        this.nearSound.tempo(180);
         this.nearSound.repeat(0);
 
-        // this.baseSound = baseSound;
-        // this.baseSound.tempo(60);
-        // this.baseSound.repeat(-1);
-        this.baseSounds = baseSounds;
-        for (int i = 0; i < 3; ++i) {
-            this.baseSounds[i].tempo(56);
-            this.baseSounds[i].repeat(0);
-        }
+        this.drumSound.tempo(60);
+        this.drumSound.repeat(0);
+
+        this.baseSound = baseSound;
+        this.baseSound.tempo(60);
+        this.baseSound.repeat(0);
 
         this.objects = new TestObject[maxObject];
         for (int c = 0; c < this.objectCount; ++c) {
@@ -41,19 +44,26 @@ class MapMusic {
             mapObjects[i] = -1;
         }
         chordSet = new ChordSet();
+        measureCount = 1;
     }
 
     void update(TestObject[] objects, int objectCount, int moveObNum) {
         countFrame = countFrame % ((int)frameRate * 4);
 
-         // if(countFrame < 10 && resetFlag == 0){
-        if(!nearSound.isPlaying() && !baseSounds[0].isPlaying()){
+         if(!nearSound.isPlaying() && !baseSound.isPlaying()){
+            println("Start [" + measureCount + "] measure!");
+            measureCount++;
             setMap();
             soundMusic();
         }
-        // if(countFrame > (int)frameRate * 4 -10 && resetFlag == 1){
-        //     resetFlag = 0;
-        // }
+        updateObject(objects, objectCount);
+        drawLine();
+        drawObject(moveObNum);
+        drawMap();
+        countFrame++;
+    }
+
+    void updateObject(TestObject[] objects, int objectCount){
         for(;;){
             if (this.objectCount == objectCount) {
                 break;
@@ -71,10 +81,17 @@ class MapMusic {
             this.objects[c].x = objects[c].x;
             this.objects[c].y = objects[c].y;
         }
-        drawLine();
-        drawObject(moveObNum);
-        drawMap();
-        countFrame++;
+    }
+
+    void initMusic(int flag){
+        println("!!Stop music!!");
+        this.nearSound.stop();
+        this.nearSound.empty();
+        this.drumSound.stop();
+        this.drumSound.empty();
+        this.baseSound.stop();
+        this.baseSound.empty();
+        countFrame =0;
     }
 
     void drawLine(){
@@ -91,7 +108,7 @@ class MapMusic {
     }
 
     void drawObject(int moveObNum){
-        for (int c = 0; c < objectCount; ++c) {
+        for (int c = 0; c < this.objectCount; ++c) {
             fill(0, 100, 0, 120);
             if (moveObNum == c) {
                 fill(250, 200, 220, 200);
@@ -166,17 +183,11 @@ class MapMusic {
         float disPitch  = 0.0;
 
         float[] savePharse = new float[3];
-        // for (int i = 0; i < 3; ++i) {
-        //     savePharse[i] = (int)random(-4, 4) * 2;
-        // }
-        // this.baseSound.stop();
         this.nearSound.stop();
-        // this.baseSound.empty();
         this.nearSound.empty();
-        for (int i = 0; i < 3; ++i) {
-            this.baseSounds[i].stop();
-            this.baseSounds[i].empty();
-        }
+        this.baseSound.stop();
+        this.baseSound.empty();
+
         for(int c = 0; c < 6; ++c){
             if(mapObjects[c] <= 0){
                 continue;
@@ -186,10 +197,8 @@ class MapMusic {
                 pan = 127;
             }
             if(height/5<= mapObjects[c] && mapObjects[c] < 3*height/5){
-                // float[] chord = chordSet.getRandomNormalChord(0);
                 float[] chord = chordSet.getCadenceChord(0);
                 disPitch = map(mapObjects[c], height/5, 3*height/5, 0, 40);
-                // this.baseSound.addChord(chordCount, 1, 0, chord, 100, 3, 0.8, pan);
                 oneBases[0][chordCount] = chord[0];
                 oneBases[1][chordCount] = chord[1];
                 oneBases[2][chordCount] = chord[2];
@@ -216,27 +225,15 @@ class MapMusic {
                 phrasePans[pitchCount] = pan;
                 dynamics[pitchCount] = 80 - random(-20, 10);
                 pitchCount++;
-                f = f - savePharse[2];
-                phrase[pitchCount] = f;
-                phrasePans[pitchCount] = pan;
-                dynamics[pitchCount] = 80 - random(-10, 30);
-                pitchCount++;
             }
         }
-        // float longtail = 2- pitchCount * 0.5;
-        // if(longtail < 0.5){
-        //     longtail = 0.5;
-        // }
+
         if(pitchCount !=0){
-            for(int c= 0 ;  c < 24; ++c){
+            for(int c= 0 ;  c < 18; ++c){
                 longtails[c] = 1;
                 articulations[c] = 0.8;
-                // dynamics[c] = 80;
-                // if(c%2 ==1){
-                //     dynamics[c] = 50;
-                // }
             }
-            int pitchCountGap = 24 - pitchCount;
+            int pitchCountGap = 18 - pitchCount;
             for (int i = 0; i < pitchCountGap; ++i) {
                 phrase[pitchCount + i] = phrase[i % pitchCount];
                 phrasePans[pitchCount + i] = phrasePans[i % pitchCount];
@@ -250,13 +247,8 @@ class MapMusic {
                 oneBases[0][0] = chord2[0] ;
                 oneBases[1][0] = chord2[1] ;
                 oneBases[2][0] = chord2[2] ;
-                // oneBases[0][1] = chord2[0];
-                // oneBases[1][1] = chord2[1];
-                // oneBases[2][1] = chord2[2];
                 base_dynamics[0] = 30;
-                // base_dynamics[1] = 50;
                 oneBasesPan[0] = 64;
-                // oneBasesPan[1] = 64;
                 for(int c= 0 ;  c < 6; ++c){
                     base_longtails[c] = 1;
                     base_articulations[c] = 0.8;
@@ -266,7 +258,6 @@ class MapMusic {
                 for(int c= 0 ;  c < 6; ++c){
                     base_longtails[c] = 1;
                     base_articulations[c] = 0.8;
-                    // base_dynamics[c] = 70;
                 }
         }
         int chordCountGap = 6 - chordCount;
@@ -277,19 +268,65 @@ class MapMusic {
             oneBasesPan[chordCount + i] = oneBasesPan[i % chordCount];
             base_dynamics[chordCount + i] = base_dynamics[i % chordCount];
         }
-        // float instrument = this.baseSounds[0].ABASS;
-        float instrument = this.baseSounds[0].EPIANO;
-        for (int i = 0; i < 3; ++i) {
-            this.baseSounds[i].addPhrase(0, 0, instrument, oneBases[i], base_dynamics, base_longtails, base_articulations, oneBasesPan);
+
+        float instrument = this.baseSound.EPIANO;
+        for(int i=0; i<6; ++i) {
+        float[] setChord = {oneBases[0][i], oneBases[1][i], oneBases[2][i]};
+            this.baseSound.addChord(i, 0, instrument, setChord, base_dynamics[i], 1, 0.8, oneBasesPan[i]);
         }
-        for (int i = 0; i < 3; ++i) {
-            this.baseSounds[i].play();
-        }
+        this.baseSound.play();
 
         if(pitchCount != 0){
             this.nearSound.play();
         }
+        backMusic();
          resetFlag = 1;
+    }
+
+    void backMusic()
+    {
+        this.drumSound.stop();
+        this.drumSound.empty();
+        float[] phrase = new float[18];
+        float[] dynamics = new float[18];
+        float[] phrasePans = new float[18];
+        float[] longtails = new float[18];
+        float[] articulations = new float[18];
+        for(int i=0; i<6; ++i){
+            phrase[i] = 36;
+            dynamics[i] = 100;
+            phrasePans[i] = 64;
+            longtails[i] = 1;
+            articulations[i] = 0.8;
+        }
+        this.drumSound.addPhrase(0, 9, 0, phrase, dynamics, longtails, articulations, phrasePans);
+            phrase = new float[18];
+            dynamics = new float[18];
+            phrasePans = new float[18];
+            longtails = new float[18];
+            articulations = new float[18];
+         for(int i=0; i<18; ++i){
+            phrase[i] = 42;
+            dynamics[i] = 60;
+            phrasePans[i] = 64;
+            longtails[i] = 1/3.0;
+            articulations[i] = 0.8;
+        }
+        this.drumSound.addPhrase(0, 9, 0, phrase, dynamics, longtails, articulations, phrasePans);
+            phrase = new float[18];
+            dynamics = new float[18];
+            phrasePans = new float[18];
+            longtails = new float[18];
+            articulations = new float[18];
+         for(int i=0; i<1; ++i){
+            phrase[i] = 49;
+            dynamics[i] = 70;
+            phrasePans[i] = 64;
+            longtails[i] = 1;
+            articulations[i] = 0.8;
+        }
+        this.drumSound.addPhrase(0, 9, 0, phrase, dynamics, longtails, articulations, phrasePans);
+        this.drumSound.play();
     }
 
 };

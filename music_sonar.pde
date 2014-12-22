@@ -6,16 +6,14 @@ final int canvasHeight = 480;
 final int setFrameRate = 30;
 final int maxObject = 6;
 
-// SensedObject[] objects;
 TestObject[] objects;
 int objectCount = 1;
 
 SoundCipher[] sounds;
-// SoundCipher baseSound;
+
 SCScore baseSound;
 SCScore nearSound;
-SCScore[] onebaseSounds;
-// SoundCipher backMusic1;
+SCScore drumSound;
 
 LineWave lineWave;
 SonarWave sonarWave;
@@ -26,6 +24,7 @@ SimpleOpenNI simpleOpenNI;
 //depthMap
 
 int modeNum = 0;
+int stopFlag = 0;
 
 int moveObNum = 0;
 
@@ -48,13 +47,10 @@ void setup() {
     for(int c = 0; c < maxObject; ++c){
         sounds[c] = new SoundCipher(this);
     }
-    // baseSound = new SoundCipher(this);
-    onebaseSounds = new SCScore[3];
-    for (int i = 0; i < 3; ++i) {
-        onebaseSounds[i] = new SCScore();
-    }
+
     baseSound = new SCScore();
     nearSound = new SCScore();
+    drumSound = new SCScore();
 
     // simpleOpenNI = new SimpleOpenNI(this);
     // simpleOpenNI.enableDepth();
@@ -62,11 +58,9 @@ void setup() {
 
     objects = new TestObject[maxObject];
     objects[0] = new TestObject(100, height/2);
-    // objects[1] = new TestObject(width/4, 350);
-    // objects[2] = new TestObject(width/4, height/2);
 
     sonarWave = new SonarWave(sounds, baseSound, objects, objectCount, maxObject);
-    mapMusic =new MapMusic(nearSound, onebaseSounds, objects, objectCount, maxObject);
+    mapMusic =new MapMusic(nearSound, baseSound, drumSound,objects, objectCount, maxObject);
 
     frameRate(setFrameRate);
 }
@@ -77,15 +71,25 @@ void draw() {
 
 void update() {
     fadeToWhite();
+    drawsetting();
+    if(stopFlag == 1){
+        if(modeNum != 1){
+            mapMusic.updateObject(objects, objectCount);
+            mapMusic.drawLine();
+            mapMusic.drawObject(moveObNum);
+        }
+        textSize(14);
+        fill(0);
+        text("STOP", width/2 + 200, 300);
+        return;
+    }
     if(modeNum == 1){
         // lineWave.update();
         sonarWave.update(objects, objectCount);
-        drawsetting();
         return;
     }
     // moveObject();
     mapMusic.update(objects, objectCount, moveObNum);
-    drawsetting();
 }
 
 void fadeToWhite() {
@@ -120,6 +124,10 @@ void keyPressed() {
     if(key == '-'){
         deleteObject();
         return;
+    }
+    if(key == 's' || key == 'S'){
+        stopFlag = (stopFlag  + 1) % 2;
+        mapMusic.initMusic(stopFlag);
     }
     // textSize(12);
     // fill(0);
@@ -168,6 +176,9 @@ void exit() {
     for(int c = 0; c < maxObject; ++c){
         sounds[c].stop();
     }
+    baseSound.stop();
+    nearSound.stop();
+    drumSound.stop();
     println("EXIT");
     super.exit();
 }
