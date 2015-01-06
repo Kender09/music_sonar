@@ -9,7 +9,10 @@ final int maxObject = 6;
 TestObject[] objects;
 int objectCount = 1;
 
+//sonarWave用
+//今回はコメントアウトして使わない
 SoundCipher[] sounds;
+SCScore sonarBaseSound;
 
 SCScore baseSound;
 SCScore nearSound;
@@ -43,10 +46,13 @@ void setup() {
     colorMode(HSB, 255);
     background(255);
 
-   sounds = new SoundCipher[maxObject];
-    for(int c = 0; c < maxObject; ++c){
-        sounds[c] = new SoundCipher(this);
-    }
+   // sounds = new SoundCipher[maxObject];
+   //  for(int c = 0; c < maxObject; ++c){
+   //      sounds[c] = new SoundCipher(this);
+   //  }
+   //  sonarBaseSound = new SCScore();
+   //  sonarWave = new SonarWave(sounds, sonarBaseSound, objects, objectCount, maxObject);
+
 
     baseSound = new SCScore();
     nearSound = new SCScore();
@@ -59,7 +65,6 @@ void setup() {
     objects = new TestObject[maxObject];
     objects[0] = new TestObject(100, height/2);
 
-    sonarWave = new SonarWave(sounds, baseSound, objects, objectCount, maxObject);
     mapMusic =new MapMusic(nearSound, baseSound, drumSound,objects, objectCount, maxObject);
 
     frameRate(setFrameRate);
@@ -83,11 +88,13 @@ void update() {
         text("STOP", width/2 + 200, 300);
         return;
     }
+    /*
     if(modeNum == 1){
         // lineWave.update();
         sonarWave.update(objects, objectCount);
         return;
     }
+    */
     // moveObject();
     mapMusic.update(objects, objectCount, moveObNum);
 }
@@ -105,10 +112,12 @@ void fadeToWhite() {
 }
 
 void keyPressed() {
+    /*
     if(key == 'c' || key == 'C'){
         modeNum = (modeNum + 1 ) % 2;
         return;
     }
+    */
     if(key == 'z' || key == 'Z'){
         moveObNum = (moveObNum + 1) % objectCount;
     }
@@ -128,6 +137,41 @@ void keyPressed() {
     if(key == 's' || key == 'S'){
         stopFlag = (stopFlag  + 1) % 2;
         mapMusic.initMusic(stopFlag);
+        return;
+    }
+    if (key == CODED) {
+        if(keyCode == RIGHT){
+            float ch_x = objects[moveObNum].x + 1;
+            if(ch_x >= width/2){
+                ch_x = width/2;
+            }
+            objects[moveObNum].x = ch_x;
+            return;
+        }
+        if(keyCode == LEFT){
+            float ch_x = objects[moveObNum].x - 1;
+            if(ch_x <= 0){
+                ch_x = 0;
+            }
+            objects[moveObNum].x = ch_x;
+            return;
+        }
+        if(keyCode == UP){
+            float ch_y = objects[moveObNum].y - 1;
+            if(ch_y <= 0){
+                ch_y = 0;
+            }
+            objects[moveObNum].y = ch_y;
+            return;
+        }
+        if(keyCode == DOWN){
+            float ch_y = objects[moveObNum].y + 1;
+            if(ch_y >= height){
+                ch_y = height;
+            }
+            objects[moveObNum].y = ch_y;
+            return;
+        }
     }
     // textSize(12);
     // fill(0);
@@ -173,9 +217,9 @@ void drawsetting() {
 }
 
 void exit() {
-    for(int c = 0; c < maxObject; ++c){
-        sounds[c].stop();
-    }
+    // for(int c = 0; c < maxObject; ++c){
+    //     sounds[c].stop();
+    // }
     baseSound.stop();
     nearSound.stop();
     drumSound.stop();

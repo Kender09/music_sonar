@@ -198,12 +198,12 @@ class MapMusic {
             }
             if(height/5<= mapObjects[c] && mapObjects[c] < 3*height/5){
                 float[] chord = chordSet.getCadenceChord(0);
-                disPitch = map(mapObjects[c], height/5, 3*height/5, 0, 40);
+                disPitch = map(mapObjects[c], height/5, 3*height/5, 0, 20);
                 oneBases[0][chordCount] = chord[0];
                 oneBases[1][chordCount] = chord[1];
                 oneBases[2][chordCount] = chord[2];
                 oneBasesPan[chordCount] = pan;
-                base_dynamics[chordCount] = 30 + disPitch;
+                base_dynamics[chordCount] = 45 + disPitch;
                 chordCount++;
             }
             if( 3*height/5 <= mapObjects[c]){
@@ -214,30 +214,33 @@ class MapMusic {
                 phrase[pitchCount] = f;
                 phrasePans[pitchCount] = pan;
                 dynamics[pitchCount] = 80;
+                longtails[pitchCount] = 1;
                 pitchCount++;
                 f = f - savePharse[0];
                 phrase[pitchCount] = f;
                 phrasePans[pitchCount] = pan;
                 dynamics[pitchCount] = 80 - random(-10, 30);
+                longtails[pitchCount] = 2;
                 pitchCount++;
-                f = f - savePharse[1];
-                phrase[pitchCount] = f;
-                phrasePans[pitchCount] = pan;
-                dynamics[pitchCount] = 80 - random(-20, 10);
-                pitchCount++;
+                // f = f - savePharse[1];
+                // phrase[pitchCount] = f;
+                // phrasePans[pitchCount] = pan;
+                // dynamics[pitchCount] = 80 - random(60, 40);
+                // pitchCount++;
             }
         }
 
         if(pitchCount !=0){
-            for(int c= 0 ;  c < 18; ++c){
-                longtails[c] = 1;
+            for(int c= 0 ;  c < 12; ++c){
+                // longtails[c] = 1;
                 articulations[c] = 0.8;
             }
-            int pitchCountGap = 18 - pitchCount;
+            int pitchCountGap = 12 - pitchCount;
             for (int i = 0; i < pitchCountGap; ++i) {
                 phrase[pitchCount + i] = phrase[i % pitchCount];
                 phrasePans[pitchCount + i] = phrasePans[i % pitchCount];
                 dynamics[pitchCount+ i] = dynamics[i%pitchCount];
+                longtails[pitchCount + i] = longtails[i%pitchCount];
             }
             this.nearSound.addPhrase(0, 0, 0, phrase, dynamics, longtails, articulations, phrasePans);
         }
